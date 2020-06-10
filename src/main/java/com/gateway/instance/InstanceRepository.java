@@ -11,6 +11,6 @@ public interface InstanceRepository extends CrudRepository<Instance, Long> {
 
     //Methodz here
     Instance findByAddress(String address);
-    //Instance findByid(Long id);
-    //Instance findByCallSign(String name);
+    Instance findByid(Long id);
+    Instance findByCallSign(String name);
 }

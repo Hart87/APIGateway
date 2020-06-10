@@ -1,14 +1,11 @@
 package com.gateway.instance;
 
+import com.gateway.core.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by jameshart on 6/1/20.
@@ -18,19 +15,75 @@ import java.io.IOException;
 public class V1InstanceController {
 
     private static final Logger logger = LoggerFactory.getLogger(V1InstanceController.class);
+    Helper helper = new Helper();
 
-    @RequestMapping(value = "instance/{name}", method= RequestMethod.GET, produces = "application/json")
-    public String Up(
-            @PathVariable("name") String name) {
+    private final InstanceRepository instances;
 
-        return "Hello " + name + ". The Instance controller is up.";
+    public V1InstanceController(InstanceRepository instances) {
+        this.instances = instances;
+    }
+
+    //Create Instance
+    @RequestMapping(value = "/api/v1/instance", method = RequestMethod.POST, produces = "application/json")
+    public Instance CreateInstance(
+            @RequestParam("address") String address,
+            @RequestParam("callsign") String callSign) {
+
+        String createdAt = helper.CreatedAt();
+        Instance newInstance = new Instance(address, createdAt , callSign);
+        instances.save(newInstance);
+
+        return newInstance;
+    }
+
+
+    //Get all Instances
+    @RequestMapping(value = "routes/api/v1/posts/all", method = RequestMethod.GET, produces = "application/json")
+    public ArrayList<Instance> GetAllInstances() {
+        ArrayList<Instance> theInstances = new ArrayList<>();
+
+        for (Instance instance : instances.findAll()) {
+            Instance addInstance = instance;
+            theInstances.add(addInstance);
+        }
+
+        return theInstances;
+    }
+
+
+
+    @RequestMapping(value = "/api/v1/instance/{id}", method = RequestMethod.GET, produces = "application/json")
+    public Instance FindInstance(@PathVariable("id") long id) {
+
+        Instance theInstance = null;
+
+        try {
+            theInstance  = instances.findByid(id);
+            return theInstance;
+        } catch (NullPointerException e) {
+            logger.error(e.toString());
+            Instance badInstance = new Instance("no", "no", "no");
+            return badInstance;
+        }
 
     }
 
-    @RequestMapping(value = "test/{param}", method = RequestMethod.GET)
-    public void Test(HttpServletResponse httpServletResponse,
-                     @PathVariable("param") String param) throws IOException {
-        logger.info("Some " + param);
-        httpServletResponse.sendRedirect("https://jsonplaceholder.typicode.com/todos/1");
+    //Delete Instance
+    @RequestMapping(value = "/api/v1/instance/delete/{callsign}", method= RequestMethod.DELETE, produces = "application/json")
+    public String DeleteLink(@PathVariable("unique") String callSign) {
+
+        Instance instanceToDelete = null;
+
+        try {
+            instanceToDelete  = instances.findByCallSign(callSign);
+        } catch (NullPointerException e) {
+            return e.toString();
+        }
+
+        instances.delete(instanceToDelete);
+
+        return "deleted";
     }
+
+
 }

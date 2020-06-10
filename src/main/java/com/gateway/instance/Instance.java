@@ -12,9 +12,6 @@ import javax.validation.constraints.Size;
 @Entity
 public class Instance extends BaseEntity{
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.AUTO)
-//    private final Long id;
     @NotNull
     @Size(min = 1, max = 50)
     private String address;

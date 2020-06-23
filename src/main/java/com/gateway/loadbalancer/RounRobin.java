@@ -1,6 +1,7 @@
 package com.gateway.loadbalancer;
 
 import com.gateway.core.Helper;
+import com.gateway.instance.Instance;
 import com.gateway.instance.InstanceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,22 +34,42 @@ public class RounRobin {
     public void RR(
             HttpServletResponse httpServletResponse,
             HttpServletRequest httpServletRequest,
-            @RequestParam("route") String body) throws IOException {
+            @RequestParam("route") String routeParam) throws IOException {
+        long count = 0;
         //Check if IP address is okay (later)
-        //Take request parameters to form a URL for the redirect
-        logger.info("Some " + body);
-
-        String testString = httpServletRequest.getParameter("route");
-        logger.info("FROM PARAMS" + testString);
-
 
         //Get router information and determine which instance to send to
-        Router router = routers.findBycallSign("alpha");
-        
+        Router router = routers.findBycallSign("roundrobin");
+        logger.info(router.toString());  //for debug
+
+
+        //In the for and if block first determine how many instances there are.
+        //Then determine what the rotation number will be based on how many instances there are.
+        //The rotation number determines which instance of the server to route to.
+        for (Instance anInstance : instances.findAll()) {
+            count++;
+            logger.info("ROUTE : " + anInstance.getAddress());
+        }
+
+        if (router.rotation >= count) {
+            router.rotation = 1;
+        } else {
+            router.rotation++;
+        }
+
+        //Find and use Instance
+        Instance instance = instances.findByid(router.rotation);
+        //logger.info(instance.toString());
+
         //Update router info
+        routers.save(router); //setting the rotation number for the next iteration
+        //logger.info(router.toString());  //for debug
+
 
         //Redirect the to the URL if all is well
-        httpServletResponse.sendRedirect("https://jsonplaceholder.typicode.com/todos/1");
+        String aString = "https://" + instance.getAddress() + routeParam;
+        logger.info(aString);
+        httpServletResponse.sendRedirect("https://" + instance.getAddress() + routeParam);
 
     }
 

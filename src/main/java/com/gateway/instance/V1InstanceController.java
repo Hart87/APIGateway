@@ -38,7 +38,7 @@ public class V1InstanceController {
 
 
     //Get all Instances
-    @RequestMapping(value = "routes/api/v1/posts/all", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/v1/instance/all", method = RequestMethod.GET, produces = "application/json")
     public ArrayList<Instance> GetAllInstances() {
         ArrayList<Instance> theInstances = new ArrayList<>();
 

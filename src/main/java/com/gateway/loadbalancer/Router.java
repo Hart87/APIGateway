@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 public class Router extends BaseEntity {
 
     private String createdAt;
-    private long rotation = 0;
+    long rotation = 0;
     private String callSign;
 
     public Router(String createdAt, long rotation, String callSign) {

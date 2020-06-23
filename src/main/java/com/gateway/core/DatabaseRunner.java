@@ -11,10 +11,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 /**
  * Created by jameshart on 6/4/20.
  */
@@ -37,7 +33,7 @@ public class DatabaseRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        //StartInstance();
+        StartInstance();
         StartRouter();
 
     }
@@ -46,19 +42,25 @@ public class DatabaseRunner implements ApplicationRunner {
 
     public void StartRouter() {
         String createdAt = helper.CreatedAt();
-        Router router = new Router(createdAt, 0, "alpha");
+        Router router = new Router(createdAt, 0, "roundrobin");
         logger.info(router.toString());
         routers.save(router);
 
     }
 
     public void StartInstance() {
-        DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-        Date dateobj = new Date();
-        String createdAt = df.format(dateobj);
+        String createdAt = helper.CreatedAt();
 
-        Instance alpha = new Instance("null", createdAt, "alpha");
+        Instance alpha = new Instance("calm-meadows-88.com", createdAt, "heroku 1");
         instances.save(alpha);
+        logger.info(alpha.toString());
+
+        Instance alpha2 = new Instance("brown-ceader-14.com", createdAt, "heroku 2");
+        instances.save(alpha2);
+        logger.info(alpha.toString());
+
+        Instance alpha3 = new Instance("hot-fire-19.com", createdAt, "heroku 3");
+        instances.save(alpha3);
         logger.info(alpha.toString());
     }
 }

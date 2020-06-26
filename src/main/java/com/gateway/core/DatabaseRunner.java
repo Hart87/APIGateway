@@ -55,7 +55,7 @@ public class DatabaseRunner implements ApplicationRunner {
         instances.save(alpha);
         logger.info(alpha.toString());
 
-        Instance alpha2 = new Instance("brown-ceader-14.com", createdAt, "heroku 2");
+        Instance alpha2 = new Instance("jsonplaceholder.typicode.com/todos/1", createdAt, "heroku 2");
         instances.save(alpha2);
         logger.info(alpha.toString());
 

@@ -30,11 +30,16 @@ public class RounRobin {
         this.routers = routers;
     }
 
-    @RequestMapping(value = "gateway/v1/rr/**", produces = "application/json")
-    public void RR(
+    //Helper method
+    public void DetermineInstance () {
+        //use this to refactor the code below....
+    }
+
+    @RequestMapping(value = "gateway/v1/rr/**", method = RequestMethod.GET, produces = "application/json")
+    public void RRGet(
             HttpServletResponse httpServletResponse,
-            HttpServletRequest httpServletRequest,
-            @RequestParam("route") String routeParam) throws IOException {
+            HttpServletRequest httpServletRequest) throws IOException {
+        logger.info("G E T");
         long count = 0;
         //Check if IP address is okay (later)
 
@@ -59,7 +64,7 @@ public class RounRobin {
 
         //Find and use Instance
         Instance instance = instances.findByid(router.rotation);
-        //logger.info(instance.toString());
+        logger.info(instance.toString());
 
         //Update router info
         routers.save(router); //setting the rotation number for the next iteration
@@ -67,31 +72,66 @@ public class RounRobin {
 
 
         //Redirect the to the URL if all is well
-        String aString = "https://" + instance.getAddress() + routeParam;
+        String theRoute = httpServletRequest.getHeader("route");
+        String aString = "https://" + instance.getAddress() + "/" + theRoute  ;
         logger.info(aString);
-        httpServletResponse.sendRedirect("https://" + instance.getAddress() + routeParam);
+        httpServletResponse.setStatus(307);
+        httpServletResponse.addHeader("Authorization", httpServletRequest.getHeader("Authorization"));
+        httpServletResponse.sendRedirect(aString);
 
     }
 
 
-    // - - Pragma - -  TESTING...
+    @RequestMapping(value = "gateway/v1/rr/**", method = RequestMethod.POST, produces = "application/json")
+    public void RRPost(
+            HttpServletResponse httpServletResponse,
+            HttpServletRequest httpServletRequest) throws IOException {
+        logger.info("P O S T ");
+        long count = 0;
+        //Check if IP address is okay (later)
 
-    @RequestMapping(value = "instance/{name}", method= RequestMethod.GET, produces = "application/json")
-    public String Up(
-            @PathVariable("name") String name)  {
+        //Get router information and determine which instance to send to
+        Router router = routers.findBycallSign("roundrobin");
+        logger.info(router.toString());  //for debug
 
-        return "Hello " + name + ". The Instance controller is up.";
+
+        //In the for and if block first determine how many instances there are.
+        //Then determine what the rotation number will be based on how many instances there are.
+        //The rotation number determines which instance of the server to route to.
+        for (Instance anInstance : instances.findAll()) {
+            count++;
+            logger.info("ROUTE : " + anInstance.getAddress());
+        }
+
+        if (router.rotation >= count) {
+            router.rotation = 1;
+        } else {
+            router.rotation++;
+        }
+
+        //Find and use Instance
+        Instance instance = instances.findByid(router.rotation);
+        logger.info(instance.toString());
+
+        //Update router info
+        routers.save(router); //setting the rotation number for the next iteration
+        //logger.info(router.toString());  //for debug
+
+        logger.info(httpServletRequest.getQueryString());
+        //use this query string to send new http requests that would return the results.
+
+        //NO REDIRECT FOR POST.... THIS IS ONLY HERE FOR GUIDANCE RIGHT NOW
+        //Redirect the to the URL if all is well
+        String theRoute = httpServletRequest.getHeader("route");
+        String aString = "https://" + instance.getAddress() + "/" + theRoute  ;
+        logger.info(aString);
+
+        httpServletResponse.addHeader("Authorization",
+                httpServletRequest.getHeader("Authorization"));
+        httpServletResponse.sendRedirect(aString);
 
     }
 
-    @RequestMapping(value = "test/{param}", method = RequestMethod.GET)
-    public void Test(HttpServletResponse httpServletResponse, HttpServletRequest httpServletRequest,
-                     @PathVariable("param") String param) throws IOException {
 
-        logger.info("Some " + param);
 
-        String testString = httpServletRequest.getPathInfo();
-        logger.info(testString.toString());
-        httpServletResponse.sendRedirect("https://jsonplaceholder.typicode.com/todos/1");
-    }
 }

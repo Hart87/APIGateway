@@ -51,7 +51,7 @@ public class DatabaseRunner implements ApplicationRunner {
     public void StartInstance() {
         String createdAt = helper.CreatedAt();
 
-        Instance alpha = new Instance("calm-meadows-88.com", createdAt, "heroku 1");
+        Instance alpha = new Instance("calm-hollows-3343.herokuapp.com", createdAt, "Jitter @ heroku 1");
         instances.save(alpha);
         logger.info(alpha.toString());
 
